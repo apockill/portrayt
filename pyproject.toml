@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 pydantic = "^1.10.2"
+replicate = "^0.0.1a16"
 
 [tool.poetry.dev-dependencies]
 darglint = "^1.8.1"
