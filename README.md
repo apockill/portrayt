@@ -34,3 +34,10 @@ bash .github/format.sh
 ```shell
 bash .github/check_lint.sh
 ```
+
+## Running the Program
+On your terminal, run:
+```
+poetry shell
+run-portrayt
+```

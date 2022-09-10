@@ -10,6 +10,7 @@ readme = "README.md"
 python = "^3.8"
 pydantic = "^1.10.2"
 replicate = "^0.0.1a16"
+gradio = "^3.3"
 
 [tool.poetry.dev-dependencies]
 darglint = "^1.8.1"
@@ -24,6 +25,10 @@ pytest-cov = "^3.0"
 pep8-naming = "^0.13.1"
 portray = "^1.7"
 cruft = "^2.10"
+
+[tool.poetry.scripts]
+run-portrayt = "portrayt.main:main"
+
 
 [build-system]
 requires = ["poetry>=0.12"]
