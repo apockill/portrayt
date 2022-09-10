@@ -40,7 +40,7 @@ jobs:
         run: |
           poetry run pytest tests/ -s --cov=portrayt/ --cov-report=term-missing ${@-}
           poetry run coverage xml
-- name: Report Coverage
+      - name: Report Coverage
         if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8'
         uses: codecov/codecov-action@v2.1.0
         with:
