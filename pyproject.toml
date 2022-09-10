@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "portrayt"
+version = "0.1.0"
+description = "This project combines e-paper, raspberry pi's, and StableDiffusion to make a picture frame that portrays anything you ask of it."
+authors = ["apocthiel@gmail.com <example@urbanmachine.build>"]
+license = "Proprietary"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+darglint = "^1.8.1"
+vulture = "^2.5"
+bandit = "^1.7"
+isort = "^5.10"
+flake8-bugbear = "^22.7"
+black = "^22.6"
+mypy = "^0.961"
+pytest = "^7.1"
+pytest-cov = "^3.0"
+pep8-naming = "^0.13.1"
+portray = "^1.7"
+cruft = "^2.10"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "hug"
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+disallow_subclassing_any = false
+implicit_reexport = true
+# We can't add annotations to decorators from other libraries, making this
+# check not very useful
+disallow_untyped_decorators = false

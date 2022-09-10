@@ -1,0 +1,16 @@
+{
+  "template": "git@github.com:UrbanMachine/cookiecutter-python-template.git",
+  "commit": "3fd3975ff84be1b9a28238a3e27ad4ebbde4e597",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "email": "example@urbanmachine.build",
+      "github_org": "apocthiel@gmail.com",
+      "project_name": "portrayt",
+      "description": "This project combines e-paper, raspberry pi's, and StableDiffusion to make a picture frame that portrays anything you ask of it.",
+      "version": "0.1.0",
+      "_template": "git@github.com:UrbanMachine/cookiecutter-python-template.git"
+    }
+  },
+  "directory": null
+}
