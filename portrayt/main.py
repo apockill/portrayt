@@ -2,7 +2,12 @@ import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
-from portrayt.configuration import Configuration, PromptGenerateVariations, RendererParams
+from portrayt.configuration import (
+    Configuration,
+    PromptGenerateVariations,
+    PromptInterpolationAnimation,
+    RendererParams,
+)
 from portrayt.interface import MainApp
 from portrayt.renderers import RendererType
 
@@ -39,12 +44,19 @@ def main() -> None:
                 prompt="Robots rights protest, colorized vintage newspaper scan",
                 num_variations=10,
             ),
+            prompt_interpolation_animation=PromptInterpolationAnimation(
+                prompt_start="the low skyline of medieval london, cgsociety, concept art",
+                prompt_end="the tall neon covered skyline of london in 2050, science fiction, space"
+                " ships, cgsociety, space ships, space art, matte painting, redshift, concept art",
+                prompt_strength=0.9,
+                num_animation_frames=25,
+            ),
             renderer=RendererParams(seconds_between_images=30),
             portrait_width=768,
             portrait_height=512,
             seed=1337,
         )
-        config_path.write_text(config.json())
+        config_path.write_text(config.json(indent=2))
 
     app = MainApp(
         configuration_path=config_path,

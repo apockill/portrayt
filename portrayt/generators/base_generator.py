@@ -1,3 +1,4 @@
+import logging
 import shutil
 from abc import ABC, abstractmethod
 from itertools import cycle
@@ -41,7 +42,9 @@ class BaseGenerator(ABC, Generic[PARAMS]):
         """Generate new images and then clear the existing images from the cache directory and
         replace them."""
         with TemporaryDirectory() as tempdir:
+            logging.info(f"Starting generation for {self}. This may take a while...")
             self._generate(Path(tempdir))
+            logging.info("Done generating!")
 
             # Since generation completed successfully, delete the current images directory and
             # copy the new one over.

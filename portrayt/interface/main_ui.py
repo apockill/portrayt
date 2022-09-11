@@ -3,7 +3,8 @@ from typing import Any
 
 import gradio as gr
 
-from portrayt import configuration, generators, renderers
+from portrayt import configuration as schemas
+from portrayt import generators, renderers
 
 
 class MainApp:
@@ -14,7 +15,7 @@ class MainApp:
         render_type: renderers.RendererType,
         port: int,
     ):
-        self._config = configuration.Configuration.parse_file(configuration_path)
+        self._config = schemas.Configuration.parse_file(configuration_path)
         self._config_path = configuration_path
         self._cache_root_path = cache_root_path
         self._server_port = port
@@ -41,6 +42,8 @@ class MainApp:
             with gr.Tabs():
                 with gr.TabItem("Image Variations"):
                     self._create_generate_variations_ui()
+                with gr.TabItem("Prompt Interpolation"):
+                    self._create_generate_interpolation_ui()
 
         return app
 
@@ -83,9 +86,29 @@ class MainApp:
             outputs=result,
         )
 
+    def _create_generate_interpolation_ui(self) -> None:
+        prompt_config = self._config.prompt_interpolation_animation
+
+        prompt_start = gr.Textbox(lambda: prompt_config.prompt_start, label="Prompt Start")
+        prompt_end = gr.Textbox(lambda: prompt_config.prompt_end, label="Prompt End")
+        prompt_strength = gr.Textbox(lambda: prompt_config.prompt_strength, label="Prompt Strength")
+        num_animation_frames = gr.Number(
+            lambda: prompt_config.num_animation_frames,
+            label="Number of animation frames",
+            precision=0,
+        )
+
+        result = gr.Label(label="")
+        save_button = gr.Button("Save and Render")
+        save_button.click(
+            self._on_interpolation_settings_saved,
+            inputs=[prompt_start, prompt_end, prompt_strength, num_animation_frames],
+            outputs=result,
+        )
+
     def _on_generate_variations_saved(self, prompt: str, num_variations: int) -> str:
         """Run when the user saves new configuration for PromptGenerateVariations"""
-        self._config.current_prompt_type = configuration.PromptGenerateVariations.__name__
+        self._config.current_prompt_type = schemas.PromptGenerateVariations.__name__
         self._config.prompt_generate_variations.prompt = prompt
         self._config.prompt_generate_variations.num_variations = num_variations
 
@@ -104,6 +127,16 @@ class MainApp:
         self._config.renderer.seconds_between_images = seconds_between_images
 
         return self.update_config(render=False)
+
+    def _on_interpolation_settings_saved(
+        self, prompt_start: str, prompt_end: str, prompt_strength: float, num_animation_frames: int
+    ) -> str:
+        self._config.current_prompt_type = schemas.PromptInterpolationAnimation.__name__
+        self._config.prompt_interpolation_animation.prompt_start = prompt_start
+        self._config.prompt_interpolation_animation.prompt_end = prompt_end
+        self._config.prompt_interpolation_animation.prompt_strength = prompt_strength
+        self._config.prompt_interpolation_animation.num_animation_frames = num_animation_frames
+        return self.update_config()
 
     def update_config(self, render: bool = True) -> str:
         """Save the current data model and run any API tasks
@@ -127,12 +160,20 @@ class MainApp:
 
     def _get_current_generator(self) -> generators.BaseGenerator[Any]:
         """Instantiate the current generator based on configuration"""
-        if self._config.current_prompt_type == configuration.PromptGenerateVariations.__name__:
-            parameters = self._config.prompt_generate_variations
-            generator = generators.VariationGenerator
-        else:
-            raise ValueError(f"Unknown prompt type {self._config.current_prompt_type}")
-        return generator(
+        mapping = {
+            schemas.PromptGenerateVariations.__name__: (
+                self._config.prompt_generate_variations,
+                generators.VariationGenerator,
+            ),
+            schemas.PromptInterpolationAnimation.__name__: (
+                self._config.prompt_interpolation_animation,
+                generators.InterpolationAnimationGenerator,
+            ),
+        }
+
+        parameters, generator = mapping[self._config.current_prompt_type]
+
+        return generator(  # type: ignore
             params=parameters,
             cache_dir=self._cache_root_path,
             height=self._config.portrait_height,

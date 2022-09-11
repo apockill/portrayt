@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from portrayt.configuration import RendererParams
+from portrayt.configuration.prompt_interpolation_animation import PromptInterpolationAnimation
 from portrayt.configuration.prompt_variations import PromptGenerateVariations
 
 
@@ -12,6 +13,7 @@ class Configuration(BaseModel):
 
     # Parameters for each individual prompt type
     prompt_generate_variations: PromptGenerateVariations
+    prompt_interpolation_animation: PromptInterpolationAnimation
 
     # Renderer configuration
     renderer: RendererParams
