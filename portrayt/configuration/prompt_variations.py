@@ -7,7 +7,3 @@ class PromptGenerateVariations(BaseModel):
     prompt: str
     num_variations: int
     prompt_strength: float = Field(default=0.8, ge=0.0, le=1.0)
-
-    class Config:
-        validate_assignment = True
-        validate_all = True
