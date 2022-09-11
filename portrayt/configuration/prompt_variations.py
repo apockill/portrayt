@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class PromptGenerateVariations(BaseModel):
@@ -6,4 +6,3 @@ class PromptGenerateVariations(BaseModel):
 
     prompt: str
     num_variations: int
-    prompt_strength: float = Field(default=0.8, ge=0.0, le=1.0)

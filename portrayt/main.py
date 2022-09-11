@@ -49,9 +49,11 @@ def main() -> None:
                 prompt_end="the tall neon covered skyline of london in 2050, science fiction, space"
                 " ships, cgsociety, space ships, space art, matte painting, redshift, concept art",
                 prompt_strength=0.9,
+                seamless_loop=False,
                 num_animation_frames=25,
             ),
             renderer=RendererParams(seconds_between_images=30),
+            clear_results_between_images=False,
             portrait_width=768,
             portrait_height=512,
             seed=1337,

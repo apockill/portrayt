@@ -59,7 +59,17 @@ class MainApp:
 
     def _create_general_settings_ui(self) -> None:
         current_prompt_type = gr.Dropdown(
-            choices=[k for k in self._schema_mappings.keys()], label="Current Prompt Type"
+            value=lambda: self._config.current_prompt_type,
+            choices=[k for k in self._schema_mappings.keys()],
+            label="Current Prompt Type",
+        )
+        seconds_between_images = gr.Number(
+            lambda: self._config.renderer.seconds_between_images,
+            label="Seconds between images",
+        )
+        clear_results_between = gr.Checkbox(
+            lambda: self._config.clear_results_between_images,
+            label="Clear previous images when a new prompt is added",
         )
         portrait_height = gr.Number(
             lambda: self._config.portrait_height, label="Frame Height", precision=0
@@ -68,10 +78,6 @@ class MainApp:
             lambda: self._config.portrait_width, label="Frame Width", precision=0
         )
         seed = gr.Number(lambda: self._config.seed, label="Seed", precision=0)
-        seconds_between_images = gr.Number(
-            lambda: self._config.renderer.seconds_between_images,
-            label="Seconds between images",
-        )
 
         result = gr.Label(label="")
         save_button = gr.Button("Save Settings")
@@ -79,10 +85,11 @@ class MainApp:
             self._on_general_settings_saved,
             inputs=[
                 current_prompt_type,
+                seconds_between_images,
+                clear_results_between,
                 portrait_height,
                 portrait_width,
                 seed,
-                seconds_between_images,
             ],
             outputs=result,
         )
@@ -137,16 +144,18 @@ class MainApp:
     def _on_general_settings_saved(
         self,
         current_prompt_type: str,
+        seconds_between_images: int,
+        clear_results_between: bool,
         portrait_height: int,
         portrait_width: int,
         seed: int,
-        seconds_between_images: int,
     ) -> str:
         self._config.current_prompt_type = current_prompt_type
+        self._config.renderer.seconds_between_images = seconds_between_images
+        self._config.clear_results_between_images = clear_results_between
         self._config.portrait_width = portrait_width
         self._config.portrait_height = portrait_height
         self._config.seed = seed
-        self._config.renderer.seconds_between_images = seconds_between_images
 
         return self.update_config(render=False)
 
@@ -177,7 +186,7 @@ class MainApp:
 
         if render:
             try:
-                generator.generate()
+                generator.generate(clear_previous=self._config.clear_results_between_images)
             except Exception as e:
                 return f"Failed to generate images:\n {e}"
 
@@ -203,3 +212,4 @@ class MainApp:
 
     def close(self) -> None:
         self._app.close()
+        gr.close_all()

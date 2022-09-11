@@ -13,7 +13,7 @@ from .base_generator import BaseGenerator
 
 
 class InterpolationAnimationGenerator(BaseGenerator[PromptInterpolationAnimation]):
-    def _generate(self, save_dir: Path) -> None:
+    def _generate(self, save_dir: Path, start_idx: int) -> None:
 
         model = replicate.models.get("andreasjansson/stable-diffusion-animation")
         gif_url = next(
@@ -50,5 +50,5 @@ class InterpolationAnimationGenerator(BaseGenerator[PromptInterpolationAnimation
                 if not ret:
                     break
 
-                image_path = save_dir / f"{frame_id}.png"
+                image_path = save_dir / f"{start_idx + frame_id}.png"
                 cv2.imwrite(str(image_path), image_bgr)

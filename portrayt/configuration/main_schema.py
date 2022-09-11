@@ -22,6 +22,7 @@ class Configuration(BaseModel):
     portrait_height: int
     portrait_width: int
     seed: int
+    clear_results_between_images: bool
 
     class Config:
         validate_assignment = True
