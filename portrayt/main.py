@@ -1,3 +1,4 @@
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -24,6 +25,8 @@ def main() -> None:
     )
     parser.add_argument("-p", "--port", type=int, default=80)
     args = parser.parse_args()
+
+    logging.getLogger().setLevel("INFO")
 
     # Create necessary files and directories for usage
     data_dir: Path = args.data_directory.absolute()
