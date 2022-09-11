@@ -22,15 +22,15 @@ class InterpolationAnimationGenerator(BaseGenerator[PromptInterpolationAnimation
                 prompt_end=self._params.prompt_end,
                 propmt_strength=self._params.prompt_strength,
                 num_animation_frames=self._params.num_animation_frames,
+                gif_ping_pong=self._params.seamless_loop,
+                width=self._width,
+                height=self._height,
+                seed=self._seed,
                 film_interpolation=True,
                 num_interpolation_steps=1,
                 guidance_scale=7.5,
                 gif_frames_per_second=1,  # irrelevant
-                gif_ping_pong=True,
-                seed=self._seed,
                 output_format="gif",
-                width=self._width,
-                height=self._height,
                 num_inference_steps=50,
             )
         )

@@ -74,7 +74,7 @@ class MainApp:
         prompt_text = gr.Textbox(lambda: prompt_config.prompt, label="Prompt")
         num_variations = gr.Number(
             lambda: prompt_config.num_variations,
-            label="Number of variations",
+            label="Number of Variations",
             precision=0,
         )
 
@@ -94,15 +94,16 @@ class MainApp:
         prompt_strength = gr.Textbox(lambda: prompt_config.prompt_strength, label="Prompt Strength")
         num_animation_frames = gr.Number(
             lambda: prompt_config.num_animation_frames,
-            label="Number of animation frames",
+            label="Number of Animation Frames",
             precision=0,
         )
+        seamless_loop = gr.Checkbox(lambda: prompt_config.seamless_loop, label="Seamless Loop")
 
         result = gr.Label(label="")
         save_button = gr.Button("Save and Render")
         save_button.click(
             self._on_interpolation_settings_saved,
-            inputs=[prompt_start, prompt_end, prompt_strength, num_animation_frames],
+            inputs=[prompt_start, prompt_end, prompt_strength, num_animation_frames, seamless_loop],
             outputs=result,
         )
 
@@ -129,13 +130,19 @@ class MainApp:
         return self.update_config(render=False)
 
     def _on_interpolation_settings_saved(
-        self, prompt_start: str, prompt_end: str, prompt_strength: float, num_animation_frames: int
+        self,
+        prompt_start: str,
+        prompt_end: str,
+        prompt_strength: float,
+        num_animation_frames: int,
+        seamless_loop: bool,
     ) -> str:
         self._config.current_prompt_type = schemas.PromptInterpolationAnimation.__name__
         self._config.prompt_interpolation_animation.prompt_start = prompt_start
         self._config.prompt_interpolation_animation.prompt_end = prompt_end
         self._config.prompt_interpolation_animation.prompt_strength = prompt_strength
         self._config.prompt_interpolation_animation.num_animation_frames = num_animation_frames
+        self._config.prompt_interpolation_animation.seamless_loop = seamless_loop
         return self.update_config()
 
     def update_config(self, render: bool = True) -> str:

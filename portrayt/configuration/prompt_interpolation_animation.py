@@ -8,3 +8,4 @@ class PromptInterpolationAnimation(BaseModel):
     prompt_end: str
     prompt_strength: float
     num_animation_frames: int
+    seamless_loop: bool
