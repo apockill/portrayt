@@ -7,12 +7,24 @@ from portrayt import configuration, generators
 
 
 class MainApp:
-    def __init__(self, configuration_path: Path, cache_root_path: Path):
+    def __init__(
+        self,
+        configuration_path: Path,
+        cache_root_path: Path,
+        render_type: renderers.RendererType,
+        port: int,
+    ):
         self._config_path = configuration_path
         self._cache_root_path = cache_root_path
+        self._server_port = port
 
         self._config = configuration.Configuration.parse_file(configuration_path)
         self._app = self._create_ui()
+
+        # Create a renderer with the current configuration
+        self._renderer = renderers.RENDERER_TYPES[render_type](
+            self._get_current_generator(), params=self._config.renderer
+        )
 
     def _create_ui(self) -> gr.Blocks:
         with gr.Blocks(title="Portrayt") as app:
@@ -28,10 +40,12 @@ class MainApp:
 
         prompt_text = gr.Textbox(label="Prompt", value=lambda: prompt_config.prompt)
         num_variations = gr.Number(
-            label="Number of variations", value=lambda: prompt_config.num_variations
+            label="Number of variations",
+            value=lambda: prompt_config.num_variations,
+            precision=0,
         )
         result = gr.Label(label="Output")
-        save_button = gr.Button("Save")
+        save_button = gr.Button("Update")
         save_button.click(
             self._on_generate_variations_saved,
             inputs=[prompt_text, num_variations],
@@ -40,29 +54,49 @@ class MainApp:
 
     def _on_generate_variations_saved(self, prompt: str, num_variations: int) -> str:
         """Run when the user saves new configuration for PromptGenerateVariations"""
-        self._config.current_prompt_type = configuration.PromptGenerateVariations.__name__
+        self._config.current_prompt_type = (
+            configuration.PromptGenerateVariations.__name__
+        )
         self._config.prompt_generate_variations.prompt = prompt
         self._config.prompt_generate_variations.num_variations = num_variations
-        self.update_config()
 
-        return "Portrait updated successfully!"
+        return self.update_config()
 
-    def update_config(self) -> None:
-        """Save the current data model and run any API tasks"""
+    def update_config(self) -> str:
+        """Save the current data model and run any API tasks
+        :return: The success/fail message
+        """
         self._config_path.write_text(self._config.json(indent=4))
 
         generator = self._get_current_generator()
-        generator.generate()
+
+        try:
+            generator.generate()
+        except Exception as e:
+            return f"Failed to generate images:\n {e}"
+
+        return "Images generated successfully!"
 
     def _get_current_generator(self) -> generators.BaseGenerator[Any]:
         """Instantiate the current generator based on configuration"""
-        if self._config.current_prompt_type == configuration.PromptGenerateVariations.__name__:
+        if (
+            self._config.current_prompt_type
+            == configuration.PromptGenerateVariations.__name__
+        ):
             parameters = self._config.prompt_generate_variations
-            generator = generators.VariationGenerator(parameters, self._cache_root_path)
+            generator = generators.VariationGenerator
         else:
             raise ValueError(f"Unknown prompt type {self._config.current_prompt_type}")
-        return generator
-
+        return generator(
+            params=parameters,
+            cache_dir=self._cache_root_path,
+            height=self._config.portrait_height,
+            width=self._config.portrait_width,
+            seed=self._config.seed,
+        )
 
     def launch(self) -> None:
-        self._app.launch()
+        self._app.launch(server_port=self._server_port, server_name="0.0.0.0")
+
+    def close(self) -> None:
+        self._app.close()
