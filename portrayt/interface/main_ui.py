@@ -48,7 +48,7 @@ class MainApp:
             with gr.Box():
                 self._create_general_settings_ui()
 
-            gr.Markdown("## ✨ Current Prompt Settings ")
+            gr.Markdown("## ✨ Prompt Settings ")
             with gr.Tabs():
                 with gr.TabItem("Image Variations"):
                     self._create_generate_variations_ui()
