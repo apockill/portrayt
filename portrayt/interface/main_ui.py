@@ -20,6 +20,16 @@ class MainApp:
         self._cache_root_path = cache_root_path
         self._server_port = port
 
+        self._schema_mappings = {
+            schemas.PromptGenerateVariations.__name__: (
+                self._config.prompt_generate_variations,
+                generators.VariationGenerator,
+            ),
+            schemas.PromptInterpolationAnimation.__name__: (
+                self._config.prompt_interpolation_animation,
+                generators.InterpolationAnimationGenerator,
+            ),
+        }
         # Create a renderer with the current configuration
         self._renderer = renderers.RENDERER_TYPES[render_type](
             self._get_current_generator(), params=self._config.renderer
@@ -48,6 +58,9 @@ class MainApp:
         return app
 
     def _create_general_settings_ui(self) -> None:
+        current_prompt_type = gr.Dropdown(
+            choices=[k for k in self._schema_mappings.keys()], label="Current Prompt Type"
+        )
         portrait_height = gr.Number(
             lambda: self._config.portrait_height, label="Frame Height", precision=0
         )
@@ -64,7 +77,13 @@ class MainApp:
         save_button = gr.Button("Save Settings")
         save_button.click(
             self._on_general_settings_saved,
-            inputs=[portrait_height, portrait_width, seed, seconds_between_images],
+            inputs=[
+                current_prompt_type,
+                portrait_height,
+                portrait_width,
+                seed,
+                seconds_between_images,
+            ],
             outputs=result,
         )
 
@@ -117,11 +136,13 @@ class MainApp:
 
     def _on_general_settings_saved(
         self,
+        current_prompt_type: str,
         portrait_height: int,
         portrait_width: int,
         seed: int,
         seconds_between_images: int,
     ) -> str:
+        self._config.current_prompt_type = current_prompt_type
         self._config.portrait_width = portrait_width
         self._config.portrait_height = portrait_height
         self._config.seed = seed
@@ -167,18 +188,7 @@ class MainApp:
 
     def _get_current_generator(self) -> generators.BaseGenerator[Any]:
         """Instantiate the current generator based on configuration"""
-        mapping = {
-            schemas.PromptGenerateVariations.__name__: (
-                self._config.prompt_generate_variations,
-                generators.VariationGenerator,
-            ),
-            schemas.PromptInterpolationAnimation.__name__: (
-                self._config.prompt_interpolation_animation,
-                generators.InterpolationAnimationGenerator,
-            ),
-        }
-
-        parameters, generator = mapping[self._config.current_prompt_type]
+        parameters, generator = self._schema_mappings[self._config.current_prompt_type]
 
         return generator(  # type: ignore
             params=parameters,
