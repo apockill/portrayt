@@ -3,7 +3,7 @@ from typing import Any
 
 import gradio as gr
 
-from portrayt import configuration, generators
+from portrayt import configuration, generators, renderers
 
 
 class MainApp:
