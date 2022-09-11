@@ -14,23 +14,26 @@ class MainApp:
         render_type: renderers.RendererType,
         port: int,
     ):
+        self._config = configuration.Configuration.parse_file(configuration_path)
         self._config_path = configuration_path
         self._cache_root_path = cache_root_path
         self._server_port = port
-
-        self._config = configuration.Configuration.parse_file(configuration_path)
-        self._app = self._create_ui()
 
         # Create a renderer with the current configuration
         self._renderer = renderers.RENDERER_TYPES[render_type](
             self._get_current_generator(), params=self._config.renderer
         )
 
+        # Create the settings server UX
+        self._app = self._create_ui()
+
     def _create_ui(self) -> gr.Blocks:
         with gr.Blocks(title="Portrayt") as app:
-            gr.Markdown("# 🖼️ Configure your Portrayt 💻")
-            gr.Markdown("## ⚙️ General Settings")
+            gr.Markdown("# 🖼️ Configure your Portrayt")
+            gr.Markdown("## 💻 Currently Displayed")
+            gr.Image(value=lambda: self._renderer.current_image)
 
+            gr.Markdown("## ⚙️ Settings")
             with gr.Box():
                 self._create_general_settings_ui()
 
