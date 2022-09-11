@@ -42,7 +42,7 @@ def main() -> None:
             current_prompt_type=PromptGenerateVariations.__name__,
             prompt_generate_variations=PromptGenerateVariations(
                 prompt="Robots rights protest, colorized vintage newspaper scan",
-                num_variations=10,
+                num_variations=3,
             ),
             prompt_interpolation_animation=PromptInterpolationAnimation(
                 prompt_start="the low skyline of medieval london, cgsociety, concept art",
@@ -50,7 +50,7 @@ def main() -> None:
                 " ships, cgsociety, space ships, space art, matte painting, redshift, concept art",
                 prompt_strength=0.9,
                 seamless_loop=False,
-                num_animation_frames=25,
+                num_animation_frames=15,
             ),
             renderer=RendererParams(seconds_between_images=30),
             clear_results_between_images=False,

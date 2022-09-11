@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PromptInterpolationAnimation(BaseModel):
@@ -7,5 +7,5 @@ class PromptInterpolationAnimation(BaseModel):
     prompt_start: str
     prompt_end: str
     prompt_strength: float
-    num_animation_frames: int
     seamless_loop: bool
+    num_animation_frames: int = Field(default=15, ge=3, le=60)
