@@ -26,7 +26,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Create necessary files and directories for usage
-    data_dir: Path = args.data_directory
+    data_dir: Path = args.data_directory.absolute()
     data_dir.mkdir(parents=True, exist_ok=True)
     config_path = data_dir / "portrayt-config.json"
     if not config_path.is_file():
@@ -36,7 +36,7 @@ def main() -> None:
                 prompt="Robots rights protest, colorized vintage newspaper scan",
                 num_variations=10,
             ),
-            renderer=RendererParams(seconds_between_image=30),
+            renderer=RendererParams(seconds_between_images=30),
             portrait_width=768,
             portrait_height=512,
             seed=1337,

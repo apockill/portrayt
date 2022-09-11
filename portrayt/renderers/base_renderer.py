@@ -33,7 +33,7 @@ class BaseRenderer(ABC):
                 self._render(self._current_image)
 
             # Wait before updating the next image
-            self._parameters_changed.wait(timeout=self._params.seconds_between_image)
+            self._parameters_changed.wait(timeout=self._params.seconds_between_images)
             self._parameters_changed.clear()
 
     def update_generator(self, generator: BaseGenerator[Any]) -> None:
