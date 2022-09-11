@@ -2,4 +2,4 @@ from pydantic import BaseModel
 
 
 class RendererParams(BaseModel):
-    seconds_between_image: int
+    seconds_between_images: int

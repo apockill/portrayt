@@ -29,23 +29,51 @@ class MainApp:
     def _create_ui(self) -> gr.Blocks:
         with gr.Blocks(title="Portrayt") as app:
             gr.Markdown("# 🖼️ Configure your Portrayt 💻")
+            gr.Markdown("## ⚙️ General Settings")
+
+            with gr.Box():
+                self._create_general_settings_ui()
+
+            gr.Markdown("## ✨ Current Prompt Settings ")
             with gr.Tabs():
                 with gr.TabItem("Image Variations"):
                     self._create_generate_variations_ui()
 
         return app
 
+    def _create_general_settings_ui(self) -> None:
+        portrait_height = gr.Number(
+            lambda: self._config.portrait_height, label="Frame Height", precision=0
+        )
+        portrait_width = gr.Number(
+            lambda: self._config.portrait_width, label="Frame Width", precision=0
+        )
+        seed = gr.Number(lambda: self._config.seed, label="Seed", precision=0)
+        seconds_between_images = gr.Number(
+            lambda: self._config.renderer.seconds_between_images,
+            label="Seconds between images",
+        )
+
+        result = gr.Label(label="")
+        save_button = gr.Button("Save Settings")
+        save_button.click(
+            self._on_general_settings_saved,
+            inputs=[portrait_height, portrait_width, seed, seconds_between_images],
+            outputs=result,
+        )
+
     def _create_generate_variations_ui(self) -> None:
         prompt_config = self._config.prompt_generate_variations
 
-        prompt_text = gr.Textbox(label="Prompt", value=lambda: prompt_config.prompt)
+        prompt_text = gr.Textbox(lambda: prompt_config.prompt, label="Prompt")
         num_variations = gr.Number(
+            lambda: prompt_config.num_variations,
             label="Number of variations",
-            value=lambda: prompt_config.num_variations,
             precision=0,
         )
-        result = gr.Label(label="Output")
-        save_button = gr.Button("Update")
+
+        result = gr.Label(label="")
+        save_button = gr.Button("Save and Render")
         save_button.click(
             self._on_generate_variations_saved,
             inputs=[prompt_text, num_variations],
@@ -54,35 +82,49 @@ class MainApp:
 
     def _on_generate_variations_saved(self, prompt: str, num_variations: int) -> str:
         """Run when the user saves new configuration for PromptGenerateVariations"""
-        self._config.current_prompt_type = (
-            configuration.PromptGenerateVariations.__name__
-        )
+        self._config.current_prompt_type = configuration.PromptGenerateVariations.__name__
         self._config.prompt_generate_variations.prompt = prompt
         self._config.prompt_generate_variations.num_variations = num_variations
 
         return self.update_config()
 
-    def update_config(self) -> str:
+    def _on_general_settings_saved(
+        self,
+        portrait_height: int,
+        portrait_width: int,
+        seed: int,
+        seconds_between_images: int,
+    ) -> str:
+        self._config.portrait_width = portrait_width
+        self._config.portrait_height = portrait_height
+        self._config.seed = seed
+        self._config.renderer.seconds_between_images = seconds_between_images
+
+        return self.update_config(render=False)
+
+    def update_config(self, render: bool = True) -> str:
         """Save the current data model and run any API tasks
+        :param render: If true, the generator will re-render images
         :return: The success/fail message
         """
         self._config_path.write_text(self._config.json(indent=4))
 
         generator = self._get_current_generator()
 
-        try:
-            generator.generate()
-        except Exception as e:
-            return f"Failed to generate images:\n {e}"
+        if render:
+            try:
+                generator.generate()
+            except Exception as e:
+                return f"Failed to generate images:\n {e}"
 
-        return "Images generated successfully!"
+        # Update the renderer so it knows about the new generator
+        self._renderer.update_generator(generator)
+
+        return "Settings saved successfully!"
 
     def _get_current_generator(self) -> generators.BaseGenerator[Any]:
         """Instantiate the current generator based on configuration"""
-        if (
-            self._config.current_prompt_type
-            == configuration.PromptGenerateVariations.__name__
-        ):
+        if self._config.current_prompt_type == configuration.PromptGenerateVariations.__name__:
             parameters = self._config.prompt_generate_variations
             generator = generators.VariationGenerator
         else:
