@@ -34,7 +34,7 @@ class BaseGenerator(ABC, Generic[PARAMS]):
         """Return the 'next' image in the generation loop"""
         if self._image_generator is None:
             image_paths = list(self.images_dir.iterdir())
-            image_paths.sort(key=lambda p: p.name)
+            image_paths.sort(key=lambda p: int(p.stem))
             self._image_generator = cycle(image_paths)
         return next(self._image_generator)
 

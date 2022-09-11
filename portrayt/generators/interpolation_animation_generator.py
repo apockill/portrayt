@@ -50,4 +50,5 @@ class InterpolationAnimationGenerator(BaseGenerator[PromptInterpolationAnimation
                 if not ret:
                     break
 
-                cv2.imwrite(f"{frame_id}.png", image_bgr)
+                image_path = save_dir / f"{frame_id}.png"
+                cv2.imwrite(str(image_path), image_bgr)
