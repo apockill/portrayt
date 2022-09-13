@@ -39,6 +39,8 @@ bash .github/check_lint.sh
 Install docker
 ```bash
 curl -sSL https://get.docker.com | sh
+sudo groupadd docker
+sudo usermod -aG docker $USER
 ```
 
 Create a .env file in your current directory and fill in the API key:
