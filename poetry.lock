@@ -1452,7 +1452,7 @@ test = ["black (>=22.3.0,<23.0.0)", "coverage (>=5.2,<6.0)", "isort (>=5.0.6,<6.
 name = "types-requests"
 version = "2.28.10"
 description = "Typing stubs for requests"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1463,7 +1463,7 @@ types-urllib3 = "<1.27"
 name = "types-urllib3"
 version = "1.26.24"
 description = "Typing stubs for urllib3"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1579,7 +1579,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "4bd0f8bfb6afd019241e52c50343808e267d0d9a8acacc90daa1ce478d0101da"
+content-hash = "de074686da6ad131c5e79c1e98b70773b7944dd7a41e40238529ee3ed673253e"
 
 [metadata.files]
 aiohttp = [
