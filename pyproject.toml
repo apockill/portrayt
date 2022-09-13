@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "portrayt"
-version = "0.1.0"
+version = "0.2.0"
 description = "This project combines e-paper, raspberry pi's, and StableDiffusion to make a picture frame that portrays anything you ask of it."
 authors = ["Alex Thiele <apocthiel@gmail.com>"]
 license = "MIT"
