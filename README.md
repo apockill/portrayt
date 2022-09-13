@@ -36,8 +36,17 @@ bash .github/check_lint.sh
 ```
 
 ## Running the Program
-On your terminal, run:
+Install docker
+```bash
+curl -sSL https://get.docker.com | sh
 ```
-poetry shell
-run-portrayt
+
+Create a .env file in your current directory and fill in the API key:
+```bash
+REPLICATE_API_TOKEN=<your token here>
+```
+
+Build and run the image
+```bash
+docker compose up --build -d
 ```
