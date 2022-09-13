@@ -11,8 +11,8 @@ python = "^3.8"
 pydantic = "^1.10.2"
 replicate = "0.0.1a16"
 gradio = "^3.3"
-opencv-python = "^4.6.0.66"
 inky = "^1.3.2"
+opencv-python = { version = "^4.6.0.66", optional = true }
 
 [tool.poetry.dev-dependencies]
 types-requests = "^2.28.10"
@@ -28,6 +28,9 @@ pytest-cov = "^3.0"
 pep8-naming = "^0.13.1"
 portray = "^1.7"
 cruft = "^2.10"
+
+[tool.poetry.extras]
+opencv = ["opencv-python"]
 
 [tool.poetry.scripts]
 run-portrayt = "portrayt.main:main"
