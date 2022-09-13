@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "portrayt"
-version = "0.3.0"
+version = "0.4.0"
 description = "This project combines e-paper, raspberry pi's, and StableDiffusion to make a picture frame that portrays anything you ask of it."
 authors = ["Alex Thiele <apocthiel@gmail.com>"]
 license = "MIT"
@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 pydantic = "^1.10.2"
-replicate = "^0.0.1a16"
+replicate = "0.0.1a16"
 gradio = "^3.3"
 opencv-python = "^4.6.0.66"
 
