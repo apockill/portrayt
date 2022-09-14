@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any
+from textwrap import dedent
+from typing import Any, Optional, Tuple
 
 import gradio as gr
 
@@ -19,6 +20,7 @@ class MainApp:
         self._config_path = configuration_path
         self._cache_root_path = cache_root_path
         self._server_port = port
+        self._image: gr.Image
 
         self._schema_mappings = {
             schemas.PromptGenerateVariations.__name__: (
@@ -32,7 +34,7 @@ class MainApp:
         }
         # Create a renderer with the current configuration
         self._renderer = renderers.RENDERER_TYPES[render_type](
-            self._get_current_generator(), params=self._config.renderer
+            self._get_current_generator().images_dir, params=self._config.renderer
         )
 
         # Create the settings server UX
@@ -42,20 +44,54 @@ class MainApp:
         with gr.Blocks(title="Portrayt") as app:
             gr.Markdown("# 🖼️ Configure your Portrayt")
             gr.Markdown("## 💻 Currently Displayed")
-            gr.Image(value=lambda: self._renderer.current_image)
+            self._create_image_controls_ui()
 
-            gr.Markdown("## ⚙️ Settings")
-            with gr.Box():
-                self._create_general_settings_ui()
-
-            gr.Markdown("## ✨ Prompt Settings ")
+            gr.Markdown(
+                dedent(
+                    """
+                    ## ✨ Create Images ✨
+                    Create images by writing prompts- they'll be added to the viewing queue!
+                    """
+                )
+            )
             with gr.Tabs():
                 with gr.TabItem("Image Variations"):
                     self._create_generate_variations_ui()
                 with gr.TabItem("Prompt Interpolation"):
                     self._create_generate_interpolation_ui()
 
+            gr.Markdown("## ⚙️ Advanced Settings")
+            with gr.Box():
+                self._create_general_settings_ui()
+
         return app
+
+    def _create_image_controls_ui(self) -> None:
+        """Create a UI for shuffling, skipping, and viewing the current image"""
+
+        def get_shuffle_text() -> str:
+            return "Disable shuffle" if self._renderer._shuffling else "Enable shuffle"
+
+        def on_toggle_shuffle() -> Tuple[str, Optional[Path]]:
+            self._renderer.toggle_shuffle()
+            return get_shuffle_text(), self._renderer.current_image
+
+        def on_next() -> Optional[Path]:
+            self._renderer.next()
+            return self._renderer.current_image
+
+        def get_current_image() -> Optional[Path]:
+            return self._renderer.current_image
+
+        self._image = gr.Image(value=get_current_image)
+        with gr.Row():
+            refresh_btn = gr.Button("Refresh")
+            next_btn = gr.Button("Next Image")
+            shuffle_btn = gr.Button(value=get_shuffle_text)
+
+        refresh_btn.click(fn=get_current_image, inputs=[], outputs=[self._image])
+        next_btn.click(fn=on_next, inputs=[], outputs=[self._image])
+        shuffle_btn.click(fn=on_toggle_shuffle, inputs=[], outputs=[shuffle_btn, self._image])
 
     def _create_general_settings_ui(self) -> None:
         current_prompt_type = gr.Dropdown(
@@ -91,7 +127,7 @@ class MainApp:
                 portrait_width,
                 seed,
             ],
-            outputs=result,
+            outputs=[result, self._image],
         )
 
     def _create_generate_variations_ui(self) -> None:
@@ -109,7 +145,7 @@ class MainApp:
         save_button.click(
             self._on_generate_variations_saved,
             inputs=[prompt_text, num_variations],
-            outputs=result,
+            outputs=[result, self._image],
         )
 
     def _create_generate_interpolation_ui(self) -> None:
@@ -130,10 +166,12 @@ class MainApp:
         save_button.click(
             self._on_interpolation_settings_saved,
             inputs=[prompt_start, prompt_end, prompt_strength, num_animation_frames, seamless_loop],
-            outputs=result,
+            outputs=[result, self._image],
         )
 
-    def _on_generate_variations_saved(self, prompt: str, num_variations: int) -> str:
+    def _on_generate_variations_saved(
+        self, prompt: str, num_variations: int
+    ) -> Tuple[str, Optional[Path]]:
         """Run when the user saves new configuration for PromptGenerateVariations"""
         self._config.current_prompt_type = schemas.PromptGenerateVariations.__name__
         self._config.prompt_generate_variations.prompt = prompt
@@ -149,7 +187,7 @@ class MainApp:
         portrait_height: int,
         portrait_width: int,
         seed: int,
-    ) -> str:
+    ) -> Tuple[str, Optional[Path]]:
         self._config.current_prompt_type = current_prompt_type
         self._config.renderer.seconds_between_images = seconds_between_images
         self._config.clear_results_between_images = clear_results_between
@@ -166,7 +204,7 @@ class MainApp:
         prompt_strength: float,
         num_animation_frames: int,
         seamless_loop: bool,
-    ) -> str:
+    ) -> Tuple[str, Optional[Path]]:
         self._config.current_prompt_type = schemas.PromptInterpolationAnimation.__name__
         self._config.prompt_interpolation_animation.prompt_start = prompt_start
         self._config.prompt_interpolation_animation.prompt_end = prompt_end
@@ -175,7 +213,7 @@ class MainApp:
         self._config.prompt_interpolation_animation.seamless_loop = seamless_loop
         return self.update_config()
 
-    def update_config(self, render: bool = True) -> str:
+    def update_config(self, render: bool = True) -> Tuple[str, Optional[Path]]:
         """Save the current data model and run any API tasks
         :param render: If true, the generator will re-render images
         :return: The success/fail message
@@ -188,12 +226,12 @@ class MainApp:
             try:
                 generator.generate(clear_previous=self._config.clear_results_between_images)
             except Exception as e:
-                return f"Failed to generate images:\n {e}"
+                return f"Failed to generate images:\n {e}", self._renderer.current_image
 
         # Update the renderer so it knows about the new generator
-        self._renderer.update_generator(generator)
+        self._renderer.update_image_dir(generator.images_dir)
 
-        return "Settings saved successfully!"
+        return "Settings saved successfully!", self._renderer.current_image
 
     def _get_current_generator(self) -> generators.BaseGenerator[Any]:
         """Instantiate the current generator based on configuration"""
