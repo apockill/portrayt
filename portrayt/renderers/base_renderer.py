@@ -33,7 +33,7 @@ class BaseRenderer(ABC):
             self._parameters_changed.clear()
 
             # Render the next image, if there is one
-            if next_image is None:
+            if self._current_image is None:
                 logging.warning(f"No images found to render in: {self._images_dir}")
             else:
                 self._render(self._current_image)
@@ -42,12 +42,14 @@ class BaseRenderer(ABC):
             self._parameters_changed.wait(timeout=self._params.seconds_between_images)
 
     def update_image_dir(self, images_dir: Path) -> None:
-        if self._images_dir == images_dir:
-            return
+        if self._images_dir != images_dir:
+            # Reset the position in the queue by setting current image to None
+            self._current_image = None
 
         self._images_dir = images_dir
-        self._current_image = None
         self._parameters_changed.set()
+
+        # Get the new 'current image'
         self._wait_for_parameters_updated()
 
     @property
@@ -94,7 +96,7 @@ class BaseRenderer(ABC):
                 return paths[0]
             else:
                 return paths[next_idx]
-        except ValueError:
+        except IndexError:
             return None
 
     @abstractmethod
