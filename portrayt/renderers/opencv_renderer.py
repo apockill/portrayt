@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from portrayt.renderers import BaseRenderer
 
@@ -10,9 +9,6 @@ except ImportError:
 
 
 class OpenCVRenderer(BaseRenderer):
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
-
     def _render(self, image_path: Path) -> None:
         image_bgr = cv2.imread(str(image_path))
 
