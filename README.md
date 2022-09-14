@@ -52,3 +52,6 @@ Build and run the image
 ```bash
 docker compose up --build -d
 ```
+
+When using a Raspberry pi, make sure to enable the spi interface by going to `raspi-config`, 
+interface options, and selecting enable.

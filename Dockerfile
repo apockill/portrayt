@@ -14,7 +14,9 @@ RUN apt-get update && apt-get install -y \
   # Opencv
   ffmpeg libsm6 libxext6 libgl1 \
   # Cryptography build (on arm 32 platform)
-  libssl-dev python3-venv
+  libssl-dev python3-venv \
+   # GPIO
+   rpi.gpio
 
 RUN curl -sSL https://install.python-poetry.org --output /tmp/install-poetry.py \
     && POETRY_HOME=/usr/local python3 /tmp/install-poetry.py
