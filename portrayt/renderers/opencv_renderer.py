@@ -1,9 +1,12 @@
 from pathlib import Path
 from typing import Any
 
-import cv2
-
 from portrayt.renderers import BaseRenderer
+
+try:
+    import cv2
+except ImportError:
+    pass
 
 
 class OpenCVRenderer(BaseRenderer):

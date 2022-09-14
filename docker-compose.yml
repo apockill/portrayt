@@ -1,0 +1,19 @@
+services:
+  portrayt:
+    image: apockill/portrayt
+    command: poetry run run-portrayt --port 8080 --renderer ${RENDERER:-opencv}
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      # Necessary for display passthrough
+      - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      # State
+      - "./.portrayt-state:/project/.portrayt-state"
+    environment:
+      REPLICATE_API_TOKEN: ${REPLICATE_API_TOKEN}
+      # Necessary for display passthrough
+      DISPLAY: $DISPLAY
+    build:
+      context: .
+    ports:
+      - 8080:8080

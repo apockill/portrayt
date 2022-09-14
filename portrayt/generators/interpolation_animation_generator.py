@@ -1,11 +1,10 @@
 import logging
-from itertools import count
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-import cv2
 import replicate
 import requests
+from PIL import Image
 
 from portrayt.configuration import PromptInterpolationAnimation
 
@@ -44,11 +43,9 @@ class InterpolationAnimationGenerator(BaseGenerator[PromptInterpolationAnimation
             Path(gif_path.name).write_bytes(gif_data)
 
             # Open the gif and save the individual frames
-            gif = cv2.VideoCapture(str(gif_path.name))
-            for frame_id in count():
-                ret, image_bgr = gif.read()
-                if not ret:
-                    break
+            with Image.open(str(gif_path.name)) as gif:
+                for frame_id in range(gif.n_frames):
+                    gif.seek(frame_id)
 
-                image_path = save_dir / f"{start_idx + frame_id}.png"
-                cv2.imwrite(str(image_path), image_bgr)
+                    image_path = save_dir / f"{start_idx + frame_id}.png"
+                    gif.save(str(image_path))
