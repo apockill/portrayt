@@ -66,9 +66,12 @@ def main() -> None:
         render_type=args.renderer,
         port=args.port,
     )
-    app.launch()
 
-    app.close()
+    try:
+        app.launch()
+    except Exception:
+        app.close()
+        raise
 
 
 if __name__ == "__main__":

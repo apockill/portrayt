@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from itertools import cycle
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from pydantic import BaseModel
 
@@ -30,17 +30,14 @@ class BaseGenerator(ABC, Generic[PARAMS]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.images_dir=}, {self._params=})"
 
-    def next(self) -> Path:
-        """Return the 'next' image in the generation loop"""
-        if self._image_generator is None:
-            self._image_generator = cycle(self.image_paths)
-        return next(self._image_generator)
-
     @property
-    def image_paths(self) -> List[Path]:
+    def next_idx(self) -> int:
+        """The name of the index the next image will be saved as"""
         image_paths = list(self.images_dir.glob("*.png"))
         image_paths.sort(key=lambda p: int(p.stem))
-        return image_paths
+        if len(image_paths):
+            return int(image_paths[-1].stem) + 1
+        return 0
 
     def generate(self, clear_previous: bool) -> None:
         """Generate new images and then clear the existing images from the cache directory and
@@ -50,10 +47,7 @@ class BaseGenerator(ABC, Generic[PARAMS]):
             ones. If false, new oens will be added, in sequential order after the existing ones.
         """
 
-        if not clear_previous and len(self.image_paths):
-            start_idx = int(self.image_paths[-1].stem) + 1
-        else:
-            start_idx = 0
+        start_idx = 0 if clear_previous else self.next_idx
 
         with TemporaryDirectory() as tempdir:
             logging.info(f"Starting generation for {self}. {start_idx=}. This may take a while.")
