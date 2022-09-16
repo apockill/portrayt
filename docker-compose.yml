@@ -15,5 +15,7 @@ services:
       DISPLAY: $DISPLAY
     build:
       context: .
+      args:
+        POETRY_EXTRAS: ${POETRY_EXTRAS:-}
     ports:
       - 8080:8080

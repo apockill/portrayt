@@ -14,9 +14,9 @@ RUN apt-get update && apt-get install -y \
   # Opencv
   ffmpeg libsm6 libxext6 libgl1 \
   # Cryptography build (on arm 32 platform)
-  libssl-dev python3-venv \
-   # GPIO
-   rpi.gpio
+  libssl-dev python3-venv
+
+RUN apt-get update && apt-get install rpi.gpio; exit 0
 
 RUN curl -sSL https://install.python-poetry.org --output /tmp/install-poetry.py \
     && POETRY_HOME=/usr/local python3 /tmp/install-poetry.py
@@ -29,7 +29,9 @@ ENV PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 WORKDIR /project
 COPY pyproject.toml .
 COPY poetry.lock .
-RUN poetry install --no-dev --no-ansi -vvv
+
+ARG POETRY_EXTRAS
+RUN poetry install --no-dev --no-ansi -vvv $POETRY_EXTRAS
 
 # Copy the rest of the project source in
 COPY portrayt portrayt
