@@ -70,10 +70,11 @@ class MainApp:
         """Create a UI for shuffling, skipping, and viewing the current image"""
 
         def get_shuffle_text() -> str:
-            return "Disable shuffle" if self._renderer._shuffling else "Enable shuffle"
+            return "Disable shuffle" if self._config.renderer.shuffle else "Enable shuffle"
 
         def on_toggle_shuffle() -> Tuple[str, Optional[Path]]:
             self._renderer.toggle_shuffle()
+            self.save_config()
             return get_shuffle_text(), self._renderer.current_image
 
         def on_next() -> Optional[Path]:
@@ -218,7 +219,7 @@ class MainApp:
         :param render: If true, the generator will re-render images
         :return: The success/fail message
         """
-        self._config_path.write_text(self._config.json(indent=4))
+        self.save_config()
 
         generator = self._get_current_generator()
 
@@ -232,6 +233,10 @@ class MainApp:
         self._renderer.update_image_dir(generator.images_dir)
 
         return "Settings saved successfully!", self._renderer.current_image
+
+    def save_config(self) -> None:
+        """Serialize and save the configuration file"""
+        self._config_path.write_text(self._config.json(indent=4))
 
     def _get_current_generator(self) -> generators.BaseGenerator[Any]:
         """Instantiate the current generator based on configuration"""

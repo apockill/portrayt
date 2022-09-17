@@ -52,7 +52,7 @@ def main() -> None:
                 seamless_loop=False,
                 num_animation_frames=15,
             ),
-            renderer=RendererParams(seconds_between_images=30),
+            renderer=RendererParams(seconds_between_images=180, shuffle=True),
             clear_results_between_images=False,
             portrait_width=768,
             portrait_height=512,

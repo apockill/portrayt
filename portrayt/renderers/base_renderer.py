@@ -18,7 +18,6 @@ class BaseRenderer(ABC):
 
         # Rendering modes
         self._images_dir = images_dir
-        self._shuffling = False
         self._current_image: Optional[Path] = None
 
         self._render_thread = Thread(target=self._render_loop, daemon=True)
@@ -62,7 +61,7 @@ class BaseRenderer(ABC):
         self._wait_for_parameters_updated()
 
     def toggle_shuffle(self) -> None:
-        self._shuffling = not self._shuffling
+        self._params.shuffle = not self._params.shuffle
         self._parameters_changed.set()
         self._wait_for_parameters_updated()
 
@@ -72,10 +71,6 @@ class BaseRenderer(ABC):
             sleep(0.1)
 
     @property
-    def shuffling(self) -> bool:
-        return self._shuffling
-
-    @property
     def _image_paths(self) -> List[Path]:
         image_paths = list(self._images_dir.glob("*.png"))
         image_paths.sort(key=lambda p: int(p.stem))
@@ -83,7 +78,7 @@ class BaseRenderer(ABC):
 
     def _next_image(self) -> Optional[Path]:
         paths = self._image_paths
-        if self._shuffling:
+        if self._params.shuffle:
             random.shuffle(paths)
 
         try:
