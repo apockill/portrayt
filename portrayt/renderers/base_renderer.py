@@ -79,7 +79,11 @@ class BaseRenderer(ABC):
     def _next_image(self) -> Optional[Path]:
         paths = self._image_paths
         if self._params.shuffle:
-            random.shuffle(paths)
+            # Always shuffle in a consistent order so that the images that appear are
+            # new, instead of shuffling each time another image is called which could
+            # cause multiple renders in a row (or nearby) to show the same image
+            seeded_random = random.Random(x="mmm sunflower seeds")
+            seeded_random.shuffle(paths)
 
         try:
             next_idx = paths.index(self._current_image) + 1  # type: ignore
