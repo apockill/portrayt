@@ -64,20 +64,23 @@ class BaseRenderer(ABC):
         if current_image is None:
             return None
 
-        image_idx = int(current_image.stem)
-
-        jsons = list(self._images_dir.glob("*.json"))
-        jsons.sort(key=lambda j: int(j.stem), reverse=True)
-        try:
-
-            prompt_path = next(p for p in jsons if image_idx >= int(p.stem))
-        except StopIteration:
+        current_prompt = current_image.with_name(f"{int(current_image.stem)}.json")
+        if current_prompt.is_file():
+            return json.loads(current_prompt.read_text())  # type: ignore
+        else:
             return None
-        return json.loads(prompt_path.read_text())  # type: ignore
 
     def next(self) -> None:
         self._parameters_changed.set()
         self._wait_for_parameters_updated()
+
+    def delete_current_image(self) -> None:
+        delete_image = self.current_image
+        if delete_image:
+            delete_json = delete_image.with_name(f"{int(delete_image.stem)}.json")
+            delete_json.unlink(missing_ok=True)
+            delete_image.unlink(missing_ok=True)
+        self.next()
 
     def toggle_shuffle(self) -> None:
         self._params.shuffle = not self._params.shuffle

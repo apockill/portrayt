@@ -58,11 +58,13 @@ class BaseGenerator(ABC, Generic[PARAMS]):
                 shutil.rmtree(self.images_dir)
                 self.images_dir.unlink(missing_ok=True)
 
-            shutil.copytree(tempdir, self.images_dir, dirs_exist_ok=True)
+            # Write the parameters used to generate each image
+            for image_path in Path(tempdir).glob("*.png"):
+                params_file = image_path.with_name(f"{int(image_path.stem)}.json")
+                params_file.write_text(self._params.json(indent=4))
 
-        # Save parameters to a file
-        params_path = self.images_dir / f"{start_idx}.json"
-        params_path.write_text(self._params.json(indent=4))
+            # Copy everything in to the main directory
+            shutil.copytree(tempdir, self.images_dir, dirs_exist_ok=True)
 
     @abstractmethod
     def _generate(self, save_dir: Path, start_idx: int) -> None:

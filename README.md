@@ -68,4 +68,9 @@ RENDERER=opencv
 POETRY_EXTRAS=--extras opencv
 ```
 
+Then, in terminal give docker access to the X window manager:
+```bash
+xhost +
+```
+
 Then build and run using the above commands.

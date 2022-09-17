@@ -73,7 +73,7 @@ class MainApp:
         """Create a UI for shuffling, skipping, and viewing the current image"""
 
         def get_shuffle_text() -> str:
-            return "Disable shuffle" if self._config.renderer.shuffle else "Enable shuffle"
+            return "🔀 Disable shuffle" if self._config.renderer.shuffle else "🔀 Enable shuffle"
 
         def on_toggle_shuffle() -> Tuple[str, Optional[Path], Optional[JSON]]:
             self._renderer.toggle_shuffle()
@@ -84,17 +84,24 @@ class MainApp:
             self._renderer.next()
             return self._renderer.current_image, self._renderer.current_prompt
 
-        def on_refresh() -> Optional[Path]:
+        def on_refresh() -> Tuple[Optional[Path], Optional[JSON]]:
+            return self._renderer.current_image, self._renderer.current_prompt
+
+        def on_delete() -> Tuple[Optional[Path], Optional[JSON]]:
+            self._renderer.delete_current_image()
             return self._renderer.current_image, self._renderer.current_prompt
 
         self._image = gr.Image(value=lambda: self._renderer.current_image)
         self._prompt = gr.JSON(value=lambda: self._renderer.current_prompt)
+
         with gr.Row():
-            refresh_btn = gr.Button("Refresh")
-            next_btn = gr.Button("Next Image")
+            refresh_btn = gr.Button("🔄 Refresh")
+            delete_btn = gr.Button("🗑️️ Delete Image")
+            next_btn = gr.Button("⏭️ Next Image")
             shuffle_btn = gr.Button(value=get_shuffle_text)
 
         refresh_btn.click(fn=on_refresh, inputs=[], outputs=[self._image, self._prompt])
+        delete_btn.click(fn=on_delete, inputs=[], outputs=[self._image, self._prompt])
         next_btn.click(fn=on_next, inputs=[], outputs=[self._image, self._prompt])
         shuffle_btn.click(
             fn=on_toggle_shuffle, inputs=[], outputs=[shuffle_btn, self._image, self._prompt]
@@ -123,7 +130,7 @@ class MainApp:
         seed = gr.Number(lambda: self._config.seed, label="Seed", precision=0)
 
         result = gr.Label(label="")
-        save_button = gr.Button("Save Settings")
+        save_button = gr.Button("💾 Save Settings")
         save_button.click(
             self._on_general_settings_saved,
             inputs=[
@@ -148,7 +155,7 @@ class MainApp:
         )
 
         result = gr.Label(label="")
-        save_button = gr.Button("Save and Render")
+        save_button = gr.Button("🪄 Imagine")
         save_button.click(
             self._on_generate_variations_saved,
             inputs=[prompt_text, num_variations],
@@ -169,7 +176,7 @@ class MainApp:
         seamless_loop = gr.Checkbox(lambda: prompt_config.seamless_loop, label="Seamless Loop")
 
         result = gr.Label(label="")
-        save_button = gr.Button("Save and Render")
+        save_button = gr.Button("🪄 Imagine")
         save_button.click(
             self._on_interpolation_settings_saved,
             inputs=[prompt_start, prompt_end, prompt_strength, num_animation_frames, seamless_loop],
