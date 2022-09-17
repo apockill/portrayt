@@ -1,11 +1,13 @@
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import gradio as gr
 
 from portrayt import configuration as schemas
 from portrayt import generators, renderers
+
+JSON = Dict[str, Any]
 
 
 class MainApp:
@@ -21,6 +23,7 @@ class MainApp:
         self._cache_root_path = cache_root_path
         self._server_port = port
         self._image: gr.Image
+        self._prompt: gr.JSON
 
         self._schema_mappings = {
             schemas.PromptGenerateVariations.__name__: (
@@ -72,27 +75,30 @@ class MainApp:
         def get_shuffle_text() -> str:
             return "Disable shuffle" if self._config.renderer.shuffle else "Enable shuffle"
 
-        def on_toggle_shuffle() -> Tuple[str, Optional[Path]]:
+        def on_toggle_shuffle() -> Tuple[str, Optional[Path], Optional[JSON]]:
             self._renderer.toggle_shuffle()
             self.save_config()
-            return get_shuffle_text(), self._renderer.current_image
+            return get_shuffle_text(), self._renderer.current_image, self._renderer.current_prompt
 
-        def on_next() -> Optional[Path]:
+        def on_next() -> Tuple[Optional[Path], Optional[JSON]]:
             self._renderer.next()
-            return self._renderer.current_image
+            return self._renderer.current_image, self._renderer.current_prompt
 
         def get_current_image() -> Optional[Path]:
             return self._renderer.current_image
 
         self._image = gr.Image(value=get_current_image)
+        self._prompt = gr.JSON(value=lambda: self._renderer.current_prompt)
         with gr.Row():
             refresh_btn = gr.Button("Refresh")
             next_btn = gr.Button("Next Image")
             shuffle_btn = gr.Button(value=get_shuffle_text)
 
-        refresh_btn.click(fn=get_current_image, inputs=[], outputs=[self._image])
-        next_btn.click(fn=on_next, inputs=[], outputs=[self._image])
-        shuffle_btn.click(fn=on_toggle_shuffle, inputs=[], outputs=[shuffle_btn, self._image])
+        refresh_btn.click(fn=get_current_image, inputs=[], outputs=[self._image, self._prompt])
+        next_btn.click(fn=on_next, inputs=[], outputs=[self._image, self._prompt])
+        shuffle_btn.click(
+            fn=on_toggle_shuffle, inputs=[], outputs=[shuffle_btn, self._image, self._prompt]
+        )
 
     def _create_general_settings_ui(self) -> None:
         current_prompt_type = gr.Dropdown(
@@ -128,7 +134,7 @@ class MainApp:
                 portrait_width,
                 seed,
             ],
-            outputs=[result, self._image],
+            outputs=[result, self._image, self._prompt],
         )
 
     def _create_generate_variations_ui(self) -> None:
@@ -146,7 +152,7 @@ class MainApp:
         save_button.click(
             self._on_generate_variations_saved,
             inputs=[prompt_text, num_variations],
-            outputs=[result, self._image],
+            outputs=[result, self._image, self._prompt],
         )
 
     def _create_generate_interpolation_ui(self) -> None:
@@ -167,12 +173,12 @@ class MainApp:
         save_button.click(
             self._on_interpolation_settings_saved,
             inputs=[prompt_start, prompt_end, prompt_strength, num_animation_frames, seamless_loop],
-            outputs=[result, self._image],
+            outputs=[result, self._image, self._prompt],
         )
 
     def _on_generate_variations_saved(
         self, prompt: str, num_variations: int
-    ) -> Tuple[str, Optional[Path]]:
+    ) -> Tuple[str, Optional[Path], Optional[JSON]]:
         """Run when the user saves new configuration for PromptGenerateVariations"""
         self._config.current_prompt_type = schemas.PromptGenerateVariations.__name__
         self._config.prompt_generate_variations.prompt = prompt
@@ -188,7 +194,7 @@ class MainApp:
         portrait_height: int,
         portrait_width: int,
         seed: int,
-    ) -> Tuple[str, Optional[Path]]:
+    ) -> Tuple[str, Optional[Path], Optional[JSON]]:
         self._config.current_prompt_type = current_prompt_type
         self._config.renderer.seconds_between_images = seconds_between_images
         self._config.clear_results_between_images = clear_results_between
@@ -205,7 +211,7 @@ class MainApp:
         prompt_strength: float,
         num_animation_frames: int,
         seamless_loop: bool,
-    ) -> Tuple[str, Optional[Path]]:
+    ) -> Tuple[str, Optional[Path], Optional[JSON]]:
         self._config.current_prompt_type = schemas.PromptInterpolationAnimation.__name__
         self._config.prompt_interpolation_animation.prompt_start = prompt_start
         self._config.prompt_interpolation_animation.prompt_end = prompt_end
@@ -214,7 +220,7 @@ class MainApp:
         self._config.prompt_interpolation_animation.seamless_loop = seamless_loop
         return self.update_config()
 
-    def update_config(self, render: bool = True) -> Tuple[str, Optional[Path]]:
+    def update_config(self, render: bool = True) -> Tuple[str, Optional[Path], Optional[JSON]]:
         """Save the current data model and run any API tasks
         :param render: If true, the generator will re-render images
         :return: The success/fail message
@@ -227,12 +233,20 @@ class MainApp:
             try:
                 generator.generate(clear_previous=self._config.clear_results_between_images)
             except Exception as e:
-                return f"Failed to generate images:\n {e}", self._renderer.current_image
+                return (
+                    f"Failed to generate images:\n {e}",
+                    self._renderer.current_image,
+                    self._renderer.current_prompt,
+                )
 
         # Update the renderer so it knows about the new generator
         self._renderer.update_image_dir(generator.images_dir)
 
-        return "Settings saved successfully!", self._renderer.current_image
+        return (
+            "Settings saved successfully!",
+            self._renderer.current_image,
+            self._renderer.current_prompt,
+        )
 
     def save_config(self) -> None:
         """Serialize and save the configuration file"""

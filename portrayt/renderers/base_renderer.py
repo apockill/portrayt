@@ -1,10 +1,11 @@
+import json
 import logging
 import random
 from abc import ABC, abstractmethod
 from pathlib import Path
 from threading import Event, Thread
 from time import sleep
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from portrayt.configuration import RendererParams
 
@@ -55,6 +56,24 @@ class BaseRenderer(ABC):
     def current_image(self) -> Optional[Path]:
         """Returns the current image being displayed"""
         return self._current_image
+
+    @property
+    def current_prompt(self) -> Optional[Dict[str, Any]]:
+        """Return the current prompt as python dict, representing the serialized json"""
+        current_image = self.current_image
+        if current_image is None:
+            return None
+
+        image_idx = int(current_image.stem)
+
+        jsons = list(self._images_dir.glob("*.json"))
+        jsons.sort(key=lambda j: int(j.stem), reverse=True)
+        try:
+
+            prompt_path = next(p for p in jsons if image_idx >= int(p.stem))
+        except StopIteration:
+            return None
+        return json.loads(prompt_path.read_text())  # type: ignore
 
     def next(self) -> None:
         self._parameters_changed.set()
