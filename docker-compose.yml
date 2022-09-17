@@ -1,7 +1,7 @@
 services:
   portrayt:
     image: apockill/portrayt
-    command: poetry run run-portrayt --port 8080 --renderer ${RENDERER:-opencv}
+    command: poetry run run-portrayt --port 80 --renderer ${RENDERER:-opencv}
     privileged: true
     restart: unless-stopped
     volumes:
@@ -18,4 +18,4 @@ services:
       args:
         POETRY_EXTRAS: ${POETRY_EXTRAS:-}
     ports:
-      - 8080:8080
+      - 80:80
