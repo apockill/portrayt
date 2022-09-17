@@ -1,6 +1,7 @@
 import logging
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, Tuple
 
 from inky.inky_uc8159 import Inky as Inky7Color
 from PIL import Image
@@ -9,13 +10,11 @@ from portrayt.renderers import BaseRenderer
 
 from .crop_utils import resize_cover
 
-_INKY_SKUS = {"4_inch": (640, 400), "5.7_inch": ((600, 448))}
 
-
-class InkyRenderer(BaseRenderer):
+class _InkyRenderer(BaseRenderer, ABC):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.display = Inky7Color(resolution=_INKY_SKUS["4_inch"])
+        self.display = Inky7Color(resolution=self.resolution)
 
         logging.info(f"Initialized Inky with resolution {self.display.resolution}")
 
@@ -25,3 +24,16 @@ class InkyRenderer(BaseRenderer):
 
         self.display.set_image(resized)
         self.display.show()
+
+    @property
+    @abstractmethod
+    def resolution(self) -> Tuple[float, float]:
+        """Enter the resolution of the inky screen here"""
+
+
+class Inky5Renderer(_InkyRenderer):
+    resolution = (600, 448)
+
+
+class Inky4Renderer(_InkyRenderer):
+    resolution = (640, 400)
