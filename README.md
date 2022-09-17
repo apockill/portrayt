@@ -46,6 +46,7 @@ sudo usermod -aG docker $USER
 Create a .env file in your current directory and fill in the API key:
 ```bash
 REPLICATE_API_TOKEN=<your token here>
+RENDERER=inky
 ```
 
 Build and run the image
@@ -55,3 +56,16 @@ docker compose up --build -d
 
 When using a Raspberry pi, make sure to enable the spi interface by going to `raspi-config`, 
 interface options, and selecting enable.
+
+### Running on desktop
+For local development, OpenCV is used to render images to a window. The `.env` file needs
+to be updated to allow opencv to be installed (and used for rendering).
+
+In the `.env` file, fill out the following:
+```
+REPLICATE_API_TOKEN=224ad79cff9b7cd0f903d274a9482c0f6a574cfc
+RENDERER=opencv
+POETRY_EXTRAS=--extras opencv
+```
+
+Then build and run using the above commands.
