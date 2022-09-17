@@ -22,7 +22,7 @@ class _InkyRenderer(BaseRenderer, ABC):
         image = Image.open(image_path)
         resized = resize_cover(image, self.display.resolution)
 
-        self.display.set_image(resized)
+        self.display.set_image(resized, saturation=6)
         self.display.show()
 
     @property
