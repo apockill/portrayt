@@ -84,17 +84,17 @@ class MainApp:
             self._renderer.next()
             return self._renderer.current_image, self._renderer.current_prompt
 
-        def get_current_image() -> Optional[Path]:
-            return self._renderer.current_image
+        def on_refresh() -> Optional[Path]:
+            return self._renderer.current_image, self._renderer.current_prompt
 
-        self._image = gr.Image(value=get_current_image)
+        self._image = gr.Image(value=lambda: self._renderer.current_image)
         self._prompt = gr.JSON(value=lambda: self._renderer.current_prompt)
         with gr.Row():
             refresh_btn = gr.Button("Refresh")
             next_btn = gr.Button("Next Image")
             shuffle_btn = gr.Button(value=get_shuffle_text)
 
-        refresh_btn.click(fn=get_current_image, inputs=[], outputs=[self._image, self._prompt])
+        refresh_btn.click(fn=on_refresh, inputs=[], outputs=[self._image, self._prompt])
         next_btn.click(fn=on_next, inputs=[], outputs=[self._image, self._prompt])
         shuffle_btn.click(
             fn=on_toggle_shuffle, inputs=[], outputs=[shuffle_btn, self._image, self._prompt]
