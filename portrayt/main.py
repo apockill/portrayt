@@ -48,7 +48,7 @@ def main() -> None:
                 prompt_start="the low skyline of medieval london, cgsociety, concept art",
                 prompt_end="the tall neon covered skyline of london in 2050, science fiction, space"
                 " ships, cgsociety, space ships, space art, matte painting, redshift, concept art",
-                prompt_strength=0.9,
+                prompt_strength=0.75,
                 seamless_loop=False,
                 num_animation_frames=15,
             ),
