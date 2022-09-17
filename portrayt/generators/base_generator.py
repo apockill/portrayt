@@ -23,7 +23,6 @@ class BaseGenerator(ABC, Generic[PARAMS]):
         self._height = height
         self._width = width
         self._seed = seed
-        self._image_generator: Optional[cycle[Path]] = None
         self.images_dir = cache_dir / self.__class__.__name__
         self.images_dir.mkdir(parents=True, exist_ok=True)
 
@@ -62,8 +61,9 @@ class BaseGenerator(ABC, Generic[PARAMS]):
 
             shutil.copytree(tempdir, self.images_dir, dirs_exist_ok=True)
 
-        # Clear the previous image generator
-        self._image_generator = None
+        # Save parameters to a file
+        params_path = self.images_dir / f"{start_idx}.json"
+        params_path.write_text(self._params.json(indent=4))
 
     @abstractmethod
     def _generate(self, save_dir: Path, start_idx: int) -> None:
