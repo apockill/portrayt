@@ -1,6 +1,6 @@
 services:
   portrayt:
-    image: apockill/portrayt
+    image: alexthiel/portrayt
     command: poetry run run-portrayt --port 80 --renderer ${RENDERER:-opencv}
     privileged: true
     restart: unless-stopped
