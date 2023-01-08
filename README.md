@@ -13,6 +13,12 @@ _________________
 [Read Latest Documentation](https://apockill.github.io/portrayt/) - [Browse GitHub Code Repository](https://github.com/apockill/portrayt/)
 _________________
 
+E-Ink Screen + Raspi on an easel             |  Dashboard View
+:-------------------------:|:-------------------------:
+![portrayt-easel.jpg](media%2Fportrayt-easel.jpg)  |  ![screenshot.png](media%2Fscreenshot.png)
+
+
+
 ## Development
 
 ### Installing python dependencies
