@@ -69,7 +69,7 @@ to be updated to allow opencv to be installed (and used for rendering).
 
 In the `.env` file, fill out the following:
 ```
-REPLICATE_API_TOKEN=224ad79cff9b7cd0f903d274a9482c0f6a574cfc
+REPLICATE_API_TOKEN=<your token here>
 RENDERER=opencv
 POETRY_EXTRAS=--extras opencv
 ```
